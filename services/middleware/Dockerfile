@@ -9,4 +9,4 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 EXPOSE 3000
 ENV NODE_ENV=production
-CMD ["bun", "run", "start"]
+CMD ["bun", "run", "index.ts"]
