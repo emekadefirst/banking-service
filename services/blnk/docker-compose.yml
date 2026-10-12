@@ -6,6 +6,23 @@ services:
     env_file: ../../.env
     networks: [bankcorenet]
 
+  blnk-db:
+    image: postgres:17
+    container_name: blnk-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: blnk
+    volumes:
+      - blnk_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d blnk"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [bankcorenet]
+
   blnk-ledger:
     image: jerryenebeli/blnk:0.13.2
     container_name: blnk-ledger-core
@@ -15,7 +32,11 @@ services:
       - "5001:5001"
     volumes:
       - ./blnk.json:/blnk.json
-    depends_on: [bank-core-redis]
+    depends_on:
+      bank-core-redis:
+        condition: service_started
+      blnk-db:
+        condition: service_healthy
     restart: on-failure
     env_file: ../../.env
     networks: [bankcorenet]
@@ -26,10 +47,17 @@ services:
     entrypoint: ["blnk", "workers"]
     volumes:
       - ./blnk.json:/blnk.json
-    depends_on: [bank-core-redis]
+    depends_on:
+      bank-core-redis:
+        condition: service_started
+      blnk-db:
+        condition: service_healthy
     restart: on-failure
     env_file: ../../.env
     networks: [bankcorenet]
+
+volumes:
+  blnk_pgdata:
 
 networks:
   bankcorenet:
