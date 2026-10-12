@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres:15
+    container_name: fineract-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: fineract_pg_pass
+    command: postgres -c max_connections=200 -c shared_buffers=256MB
+    volumes:
+      - fineract-pgdata:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  fineract:
+    image: apache/fineract:latest
+    container_name: fineract-server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8443:8443"
+    environment:
+      FINERACT_NODE_ID: "1"
+      FINERACT_HIKARI_DRIVER_SOURCE_CLASS_NAME: org.postgresql.Driver
+      FINERACT_HIKARI_JDBC_URL: jdbc:postgresql://db:5432/fineract_tenants
+      FINERACT_HIKARI_USERNAME: postgres
+      FINERACT_HIKARI_PASSWORD: fineract_pg_pass
+      FINERACT_DEFAULT_TENANTDB_HOSTNAME: db
+      FINERACT_DEFAULT_TENANTDB_PORT: "5432"
+      FINERACT_DEFAULT_TENANTDB_UID: postgres
+      FINERACT_DEFAULT_TENANTDB_PWD: fineract_pg_pass
+      FINERACT_DEFAULT_TENANTDB_CONN_PARAMS: ""
+      FINERACT_SERVER_SSL_ENABLED: "false"
+      FINERACT_SERVER_PORT: "8443"
+      FINERACT_MODE_READ_ENABLED: "true"
+      FINERACT_MODE_WRITE_ENABLED: "true"
+      FINERACT_MODE_BATCH_WORKER_ENABLED: "true"
+      FINERACT_MODE_BATCH_MANAGER_ENABLED: "true"
+      JAVA_TOOL_OPTIONS: "-Xmx1g"
+
+  # Optional: Mifos web UI
+  web-app:
+    image: openmf/web-app:latest
+    container_name: mifos-web-app
+    restart: unless-stopped
+    depends_on:
+      - fineract
+    ports:
+      - "4200:80"
+    environment:
+      FINERACT_API_URLS: http://localhost:8443
+      FINERACT_API_PROVIDER: /fineract-provider/api
+      FINERACT_API_VERSION: /v1
+      FINERACT_PLATFORM_TENANT_IDENTIFIER: default
+
+volumes:
+  fineract-pgdata:

@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:17
+    container_name: bank-core-db
+    env_file:
+      - ../.env
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres}"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bankcorenet
+
+volumes:
+  postgres_data:
+
+networks:
+  bankcorenet:
+    name: bankcorenet
+    driver: bridge
+

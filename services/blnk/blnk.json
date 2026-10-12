@@ -1,0 +1,13 @@
+{
+  "project_name": "Bank Core Ledger",
+  "port": "5001",
+  "database": {
+    "url": "postgres://${DB_USER}:${DB_PASSWORD}@bank-core-db:5432/${DB_NAME}?sslmode=disable"
+  },
+  "redis": {
+    "url": "redis://bank-core-redis:6379/0"
+  },
+  "secrets": {
+    "api_key": "${BLNK_API_KEY}"
+  }
+}
