@@ -1,19 +1,32 @@
-version: '3.8'
-
 services:
+  bank-core-redis:
+    image: redis:7.2.4
+    container_name: bank-core-redis
+    restart: on-failure
+    networks: [bankcorenet]
+
   blnk-ledger:
-    image: jerryansel/blnk:latest
+    image: jerryenebeli/blnk:0.13.2
     container_name: blnk-ledger-core
-    env_file:
-      - ../.env 
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["blnk migrate up && blnk start"]
     ports:
       - "5001:5001"
     volumes:
       - ./blnk.json:/blnk.json
-    command: ["blnk", "start", "--config", "/blnk.json"]
-    restart: unless-stopped
-    networks:
-      - bankcorenet
+    depends_on: [bank-core-redis]
+    restart: on-failure
+    networks: [bankcorenet]
+
+  blnk-worker:
+    image: jerryenebeli/blnk:0.13.2
+    container_name: blnk-worker
+    entrypoint: ["blnk", "workers"]
+    volumes:
+      - ./blnk.json:/blnk.json
+    depends_on: [bank-core-redis]
+    restart: on-failure
+    networks: [bankcorenet]
 
 networks:
   bankcorenet:
