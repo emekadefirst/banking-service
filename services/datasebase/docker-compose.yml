@@ -2,7 +2,7 @@ services:
   bank-core-db:
     image: postgres:17
     container_name: bank-core-db
-    env_file: ../.env
+    env_file: ../../.env
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}

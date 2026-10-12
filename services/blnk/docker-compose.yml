@@ -3,6 +3,7 @@ services:
     image: redis:7.2.4
     container_name: bank-core-redis
     restart: on-failure
+    env_file: ../../.env
     networks: [bankcorenet]
 
   blnk-ledger:
@@ -16,6 +17,7 @@ services:
       - ./blnk.json:/blnk.json
     depends_on: [bank-core-redis]
     restart: on-failure
+    env_file: ../../.env
     networks: [bankcorenet]
 
   blnk-worker:
@@ -26,6 +28,7 @@ services:
       - ./blnk.json:/blnk.json
     depends_on: [bank-core-redis]
     restart: on-failure
+    env_file: ../../.env
     networks: [bankcorenet]
 
 networks:

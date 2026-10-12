@@ -23,7 +23,7 @@ services:
     depends_on:
       fineract-db:
         condition: service_healthy
-    env_file: ../.env
+    env_file: ../../.env
     ports:
       - "${FINERACT_SERVER_PORT}:${FINERACT_SERVER_PORT}"
     networks: [default, bankcorenet]

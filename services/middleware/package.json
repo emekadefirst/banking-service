@@ -15,7 +15,7 @@
     "build": "bun build src/index.ts --outdir dist --target bun",
     "typecheck": "tsc --noEmit",
     "start": "bun run ./dist/index.js",
-    "dev": "bun run --watch ./index.ts"
+    "dev": "bun run --watch --env-file=../../.env ./index.ts"
   },
   "dependencies": {
     "@elysia/cors": "^1.4.2",
